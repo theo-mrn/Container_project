@@ -1,0 +1,177 @@
+services:
+  # Frontend Next.js
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost
+        - NEXT_PUBLIC_AUTH_API_URL=http://localhost:5001
+        - NEXT_PUBLIC_RESTAURANT_API_URL=http://localhost:5002
+        - NEXT_PUBLIC_ORDERS_API_URL=http://localhost:5002
+        - NEXT_PUBLIC_DEBUG=true
+        - INTERNAL_API_URL=http://nginx
+        - INTERNAL_AUTH_API_URL=http://users_service:5001
+        - INTERNAL_RESTAURANT_API_URL=http://orders_service:5002
+        - INTERNAL_ORDERS_API_URL=http://orders_service:5002
+    container_name: restaurant-frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - frontend_network
+      - backend_network
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost
+      - NEXT_PUBLIC_AUTH_API_URL=http://localhost:5001
+      - NEXT_PUBLIC_RESTAURANT_API_URL=http://localhost:5002
+      - NEXT_PUBLIC_ORDERS_API_URL=http://localhost:5002
+      - INTERNAL_API_URL=http://nginx
+      - INTERNAL_AUTH_API_URL=http://users_service:5001
+      - INTERNAL_RESTAURANT_API_URL=http://orders_service:5002
+      - INTERNAL_ORDERS_API_URL=http://orders_service:5002
+      - NEXT_PUBLIC_DEBUG=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    restart: unless-stopped
+
+  # Service Users
+  users_service:
+    build: ./backend/users_service
+    container_name: users-service
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://user_admin:secret@users_db:5432/users_db
+      - PORT=5001
+      - JWT_SECRET=users_service_secret_key_change_in_production
+    networks:
+      - backend_network
+    depends_on:
+      users_db:
+        condition: service_healthy
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-v", "http://localhost:5001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Service Commandes
+  orders_service:
+    build: ./backend/orders_service
+    container_name: orders-service
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://order_admin:secret@orders_db:5432/orders_db
+      - PORT=5002
+      - JWT_SECRET=orders_service_secret_key_change_in_production
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - backend_network
+    depends_on:
+      orders_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "5002:5002"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-v", "http://localhost:5002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Base de données utilisateurs
+  users_db:
+    image: postgres:14
+    container_name: users-db
+    environment:
+      POSTGRES_DB: users_db
+      POSTGRES_USER: user_admin
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - users_db_data:/var/lib/postgresql/data
+      - ./config/init-users-db.sql:/docker-entrypoint-initdb.d/init-users-db.sql
+    networks:
+      - backend_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user_admin -d users_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Base de données commandes
+  orders_db:
+    image: postgres:14
+    container_name: orders-db
+    environment:
+      POSTGRES_DB: orders_db
+      POSTGRES_USER: order_admin
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - orders_db_data:/var/lib/postgresql/data
+      - ./config/init-orders-db.sql:/docker-entrypoint-initdb.d/init-orders-db.sql
+    networks:
+      - backend_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U order_admin -d orders_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Redis pour la file d'attente des messages
+  redis:
+    image: redis:alpine
+    container_name: redis-queue
+    ports:
+      - "6379:6379"
+    networks:
+      - backend_network
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # NGINX comme reverse proxy et load balancer
+  nginx:
+    build: ./nginx
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+    networks:
+      - frontend_network
+      - backend_network
+    depends_on:
+      users_service:
+        condition: service_healthy
+      orders_service:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  frontend_network:
+    driver: bridge
+  backend_network:
+    driver: bridge
+
+volumes:
+  users_db_data:
+  orders_db_data:
+  redis_data: 
