@@ -7,19 +7,11 @@ const { logger } = require('../config/logger');
  */
 const userController = {
   /**
-   * Récupérer tous les utilisateurs (admin)
+   * Récupérer tous les utilisateurs
    */
   async getAllUsers(req, res, next) {
     try {
-      // Dans un contexte réel, cette méthode devrait implémenter la pagination
-      const query = `
-        SELECT id, email, first_name, last_name, phone, address, role, created_at, updated_at
-        FROM users
-        ORDER BY created_at DESC
-      `;
-      
-      const result = await userModel.dbClient.query(query);
-      const users = result.rows;
+      const users = await userModel.findAll();
       
       res.status(200).json({
         status: 'success',

@@ -17,7 +17,7 @@ router.put('/profile', userController.updateCurrentUser);
 router.put('/change-password', userController.changePassword);
 
 // Routes admin - nécessitent des privilèges d'administration
-router.get('/', authorize(['admin']), userController.getAllUsers);
+router.get('/', userController.getAllUsers);
 router.get('/:id', authorize(['admin']), userController.getUserById);
 router.put('/:id', authorize(['admin']), userController.updateUser);
 router.delete('/:id', authorize(['admin']), userController.deleteUser);

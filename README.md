@@ -33,19 +33,42 @@ Ce projet est construit selon une architecture microservices avec les composants
 
 1. Clonez le dépôt :
    ```bash
-   git clone <url-du-depot>
+   git clone https://github.com/theo-mrn/Container_project.git
    cd restaurant-order-platform
    ```
-
-2. Construisez et démarrez les conteneurs :
+2. Instalation :
    ```bash
-   docker-compose up -d
+   cd backend/order_service
+   npm install
    ```
 
+   ```bash
+   cd backend/usders_service
+   npm install
+   ```
+
+   ```bash
+   cd backend/frontend
+   npm install
+   ```
+
+
+
 3. L'application est accessible à l'adresse :
-   - Frontend: http://localhost:80
-   - API Utilisateurs: http://localhost:80/api/users
-   - API Commandes: http://localhost:80/api/orders
+   - Frontend: http://localhost:3000
+   - API Utilisateurs: http://localhost:5001/api/users
+   - API Commandes: http://localhost:5002/api/orders
+
+
+4. Docker 
+````
+docker-compose down
+rm -rf frontend/.next
+docker-compose build
+docker-compose up
+````
+
+
 
 ## 📊 Structure du projet
 
@@ -64,9 +87,9 @@ Ce projet est construit selon une architecture microservices avec les composants
 
 L'application est préchargée avec les utilisateurs suivants :
 
-- **Admin**: admin@restaurant.com / password123
-- **Manager**: manager@restaurant.com / password123
-- **Client**: customer@example.com / password123
+- **Admin**: admin2@example.com / admin
+- **Regular**: regular@example.com/ regular
+
 
 ## 📝 Fonctionnalités
 
@@ -77,25 +100,13 @@ L'application est préchargée avec les utilisateurs suivants :
 - Notifications sur les changements de statut des commandes
 - Interface d'administration pour les restaurants
 
-## 🧪 Tests
-
-Pour exécuter les tests, lancez la commande suivante dans chaque répertoire de service :
-
-```bash
-docker-compose exec users_service npm test
-docker-compose exec orders_service npm test
-``` 
-
-
-
-docker-compose down
-rm -rf frontend/.next
-
-docker-compose build
-
-docker-compose up
 
 
 
 
-utilsier le port 80 pour les requetes postman# Container_project
+
+
+
+
+
+

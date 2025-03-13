@@ -25,7 +25,7 @@ const authController = {
    */
   async register(req, res, next) {
     try {
-      const { email, password, first_name, last_name, phone, address } = req.body;
+      const { email, password, first_name, last_name, phone, address, role } = req.body;
       
       // Vérifier si l'email existe déjà
       const existingUser = await userModel.findByEmail(email);
@@ -41,7 +41,7 @@ const authController = {
         last_name,
         phone,
         address,
-        role: 'customer' // rôle par défaut
+        role: role || 'customer' // Utiliser le rôle fourni ou 'customer' par défaut
       });
       
       // Générer un token

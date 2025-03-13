@@ -174,6 +174,24 @@ class UserModel {
       throw error;
     }
   }
+
+  /**
+   * Récupérer tous les utilisateurs
+   */
+  async findAll() {
+    try {
+      const query = `
+        SELECT id, email, first_name, last_name, phone, address, role, created_at, updated_at
+        FROM users
+        ORDER BY created_at DESC
+      `;
+      const result = await dbClient.query(query);
+      return result.rows;
+    } catch (error) {
+      logger.error('Error finding all users:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = new UserModel(); 
