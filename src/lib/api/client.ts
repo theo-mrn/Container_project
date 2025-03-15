@@ -13,7 +13,7 @@ const apiClient: AxiosInstance = axios.create({
 // Intercepteur de requêtes pour ajouter le token d'authentification
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -49,7 +49,7 @@ apiClient.interceptors.response.use(
         const { token } = response.data.data;
         
         // Sauvegarder le nouveau token
-        localStorage.setItem('token', token);
+        localStorage.setItem('authToken', token);
         
         // Mettre à jour le header et réessayer la requête
         if (originalRequest.headers) {
@@ -59,7 +59,7 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest);
       } catch (refreshError) {
         // En cas d'échec du rafraîchissement du token, déconnecter l'utilisateur
-        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
         

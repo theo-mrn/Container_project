@@ -2,14 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Search } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { Restaurant } from "@/types/restaurant"
-import { restaurantService } from "@/services/restaurantService"
+import { Restaurant, restaurantService } from "@/services/restaurantService"
 
 export default function RestaurantsPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -23,7 +21,7 @@ export default function RestaurantsPage() {
         setLoading(true)
         const response = await restaurantService.getAllRestaurants()
         console.log('Restaurants from API:', response)
-        setRestaurants(response.data.restaurants)
+        setRestaurants(response)
       } catch (err) {
         console.error('Error fetching restaurants:', err)
         setError("Impossible de charger les restaurants")
@@ -51,47 +49,20 @@ export default function RestaurantsPage() {
 
   return (
     <div className="min-h-screen max-w-screen-xl mx-auto bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-16 items-center">
-          <Link href="/" className="flex items-center space-x-2 mr-4">
-            <div className="relative h-8 w-8">
-              <div className="absolute inset-0 rounded-full bg-primary opacity-20 blur-sm"></div>
-              <div className="relative flex h-full w-full items-center justify-center rounded-full bg-primary text-white">
-                <span className="font-bold text-xs">GR</span>
-              </div>
-            </div>
-            <span className="font-bold">GourmetRoute</span>
-          </Link>
-
-          <div className="flex-1 flex items-center ml-4">
-            <div className="relative w-full max-w-md">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Rechercher des restaurants ou cuisines..."
-                className="w-full pl-8 rounded-full bg-muted"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <nav className="ml-auto flex items-center space-x-4">
-            <Button variant="ghost" asChild>
-              <Link href="/">Accueil</Link>
-            </Button>
-            <Button variant="ghost" asChild>
-              <Link href="/restaurants" className="font-bold">
-                Restaurants
-              </Link>
-            </Button>
-            <Button>Réserver</Button>
-          </nav>
-        </div>
-      </header>
-
       <main className="container py-6">
+        <div className="flex-1 flex items-center mb-6">
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Rechercher des restaurants ou cuisines..."
+              className="w-full pl-8 rounded-full bg-muted"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
         <h1 className="text-2xl font-bold mb-6">Découvrez nos restaurants</h1>
 
         {/* Restaurant List */}

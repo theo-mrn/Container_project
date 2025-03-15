@@ -1,9 +1,9 @@
 import axios, { AxiosInstance } from "axios"
 
 // URLs from environment variables
-const AUTH_API_URL = process.env.NEXT_PUBLIC_AUTH_API_URL || "http://localhost:80"
-const RESTAURANT_API_URL = process.env.NEXT_PUBLIC_RESTAURANT_API_URL || "http://localhost:80"
-const ORDERS_API_URL = process.env.NEXT_PUBLIC_ORDERS_API_URL || "http://localhost:80"
+const AUTH_API_URL = process.env.NEXT_PUBLIC_AUTH_API_URL || "http://localhost:5001"
+const RESTAURANT_API_URL = process.env.NEXT_PUBLIC_RESTAURANT_API_URL || "http://localhost:5002"
+const ORDERS_API_URL = process.env.NEXT_PUBLIC_ORDERS_API_URL || "http://localhost:5002"
 
 // Configuration de base commune
 const baseConfig = {
@@ -53,7 +53,8 @@ const addAuthInterceptors = (api: AxiosInstance) => {
     (response) => response,
     (error) => {
       if (error.response?.status === 401) {
-        localStorage.removeItem("authToken")
+        // Ne pas supprimer le token automatiquement, laissez l'authService gérer cela
+        console.error('Authentication error:', error)
       }
       return Promise.reject(error)
     }

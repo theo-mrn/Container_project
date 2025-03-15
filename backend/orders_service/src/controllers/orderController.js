@@ -1,6 +1,7 @@
 const orderModel = require('../models/orderModel');
 const { ApiError } = require('../middleware/errorHandler');
 const { logger } = require('../config/logger');
+const jwt = require('jsonwebtoken');
 
 /**
  * Contrôleur pour la gestion des commandes
@@ -13,8 +14,15 @@ const orderController = {
     try {
       const orderData = req.body;
       
-      // Ajouter l'ID utilisateur depuis le token JWT
-      orderData.user_id = req.user.id;
+      // Extraire l'ID utilisateur du token JWT
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        throw new ApiError('Authentication required', 401);
+      }
+      
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.decode(token);
+      orderData.user_id = decoded.id;
       
       // Vérifier les données requises
       if (!orderData.restaurant_id || !orderData.total_amount || 
@@ -49,7 +57,16 @@ const orderController = {
    */
   async getUserOrders(req, res, next) {
     try {
-      const userId = req.user.id;
+      // Extraire l'ID utilisateur du token JWT
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        throw new ApiError('Authentication required', 401);
+      }
+      
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.decode(token);
+      const userId = decoded.id;
+      
       const orders = await orderModel.findByUserId(userId);
       
       res.status(200).json({

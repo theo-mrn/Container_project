@@ -44,7 +44,7 @@ services:
       - NODE_ENV=development
       - DATABASE_URL=postgres://user_admin:secret@users_db:5432/users_db
       - PORT=5001
-      - JWT_SECRET=users_service_secret_key_change_in_production
+      - JWT_SECRET=dev_jwt_secret_key
     networks:
       - backend_network
     depends_on:
@@ -68,7 +68,7 @@ services:
       - NODE_ENV=development
       - DATABASE_URL=postgres://order_admin:secret@orders_db:5432/orders_db
       - PORT=5002
-      - JWT_SECRET=orders_service_secret_key_change_in_production
+      - JWT_SECRET=dev_jwt_secret_key
       - REDIS_URL=redis://redis:6379
     networks:
       - backend_network

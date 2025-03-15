@@ -34,9 +34,16 @@ export interface AuthResponse {
   }
 }
 
-// Création d'une instance Axios pour l'authentification
+export interface ProfileResponse {
+  status: string;
+  data: {
+    user: User;
+  }
+}
+
+// Create Axios instance for authentication
 const authApi = axios.create({
-  baseURL: 'http://localhost:5001',
+  baseURL: process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:5001',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -44,56 +51,49 @@ const authApi = axios.create({
   withCredentials: true,
 });
 
-// Service d'authentification
+// Authentication service
 export const authService = {
-  // Connexion
+  // Login
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      console.log('Making login request to:', API_URLS.AUTH.LOGIN);
-      const response = await authApi.post(API_URLS.AUTH.LOGIN, credentials);
+      console.log('Making login request to:', `${authApi.defaults.baseURL}/api/auth/login`);
+      const response = await authApi.post('/api/auth/login', credentials);
       const data = response.data;
       
-      if (data.data?.token && data.data?.user) {
+      if (data.status === 'success' && data.data?.token && data.data?.user) {
         this.saveAuth(data.data.token, data.data.user);
+        return data;
+      } else {
+        throw new Error('Invalid response format from server');
       }
-      
-      return data;
     } catch (error) {
-      console.error('Auth API Error:', error);
+      console.error('Login error:', error);
       throw error;
     }
   },
 
-  // Inscription
+  // Register
   async register(userData: RegisterData): Promise<AuthResponse> {
     try {
-      const response = await authApi.post(API_URLS.AUTH.REGISTER, userData);
-      return response.data;
+      const response = await authApi.post('/api/auth/register', userData);
+      const data = response.data;
+      
+      if (data.status === 'success' && data.data?.token && data.data?.user) {
+        this.saveAuth(data.data.token, data.data.user);
+        return data;
+      } else {
+        throw new Error('Invalid response format from server');
+      }
     } catch (error) {
       console.error('Register error:', error);
       throw error;
     }
   },
 
-  // Vérification du token
-  async verifyToken(token: string): Promise<boolean> {
-    try {
-      const response = await authApi.get(API_URLS.AUTH.VERIFY, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      return response.status === 200;
-    } catch (error) {
-      console.error('Token verification error:', error);
-      return false;
-    }
-  },
-
-  // Déconnexion
+  // Logout
   async logout(token: string): Promise<boolean> {
     try {
-      const response = await authApi.post(API_URLS.AUTH.LOGOUT, null, {
+      const response = await authApi.post('/api/auth/logout', null, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -107,7 +107,7 @@ export const authService = {
     }
   },
 
-  // Récupérer le token du localStorage
+  // Get token from localStorage
   getToken(): string | null {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('authToken');
@@ -115,7 +115,7 @@ export const authService = {
     return null;
   },
 
-  // Enregistrer le token et les infos utilisateur
+  // Save token and user info
   saveAuth(token: string, user: User): void {
     if (typeof window !== 'undefined') {
       localStorage.setItem('authToken', token);
@@ -123,7 +123,7 @@ export const authService = {
     }
   },
 
-  // Supprimer les données d'authentification
+  // Clear auth data
   clearAuth(): void {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('authToken');
@@ -131,7 +131,7 @@ export const authService = {
     }
   },
 
-  // Récupérer l'utilisateur du localStorage
+  // Get user from localStorage
   getUser(): User | null {
     if (typeof window !== 'undefined') {
       const user = localStorage.getItem('user');
@@ -140,8 +140,56 @@ export const authService = {
     return null;
   },
 
-  // Vérifier si l'utilisateur est connecté
+  // Check if user is logged in
   isLoggedIn(): boolean {
     return !!this.getToken();
+  },
+
+  // Get user profile
+  async getProfile(): Promise<ProfileResponse> {
+    try {
+      const token = this.getToken();
+      if (!token) throw new Error('Unauthorized');
+
+      const response = await authApi.get('/api/users/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Get profile error:', error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Unauthorized');
+        }
+        throw new Error(error.response?.data?.message || 'Failed to fetch profile');
+      }
+      throw error;
+    }
+  },
+
+  // Update user profile
+  async updateProfile(userData: Partial<User>): Promise<ProfileResponse> {
+    try {
+      const token = this.getToken();
+      if (!token) throw new Error('Unauthorized');
+
+      const response = await authApi.put('/api/users/profile', userData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Update profile error:', error);
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new Error('Unauthorized');
+        }
+        throw new Error(error.response?.data?.message || 'Failed to update profile');
+      }
+      throw error;
+    }
   },
 }; 

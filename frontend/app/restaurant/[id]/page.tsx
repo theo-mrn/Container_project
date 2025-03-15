@@ -20,12 +20,18 @@ export default function RestaurantDetailPage({ params }: { params: { id: string 
       try {
         setLoading(true)
         setError(null)
-        const data = await restaurantService.getRestaurantMenu(params.id)
-        console.log('API Response:', data)
-        if (!data) {
-          throw new Error('No data received from the API')
+        // Récupérer d'abord les informations du restaurant
+        const restaurantData = await restaurantService.getRestaurant(params.id)
+        // Puis récupérer le menu
+        const menuData = await restaurantService.getRestaurantMenu(params.id)
+        
+        // Combiner les données
+        const combinedData = {
+          ...restaurantData,
+          categories: menuData.categories || []
         }
-        setRestaurant(data)
+        
+        setRestaurant(combinedData)
       } catch (error: unknown) {
         console.error('Error fetching data:', error)
         const errorMessage = error instanceof Error 
@@ -64,7 +70,7 @@ export default function RestaurantDetailPage({ params }: { params: { id: string 
           <Button onClick={() => window.location.reload()} variant="outline">
             Réessayer
           </Button>
-          <Link href="/restaurants">
+          <Link href="/restaurant">
             <Button variant="ghost">Retour aux restaurants</Button>
           </Link>
         </div>
@@ -90,34 +96,9 @@ export default function RestaurantDetailPage({ params }: { params: { id: string 
 
   return (
     <div className="min-h-screen bg-background max-w-screen-xl mx-auto">
-      {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur">
-        <div className="container flex h-16 items-center">
-          <Link href="/" className="flex items-center space-x-2 mr-4">
-            <div className="relative h-8 w-8">
-              <div className="absolute inset-0 rounded-full bg-primary opacity-20 blur-sm"></div>
-              <div className="relative flex h-full w-full items-center justify-center rounded-full bg-primary text-white">
-                <span className="font-bold text-xs">GR</span>
-              </div>
-            </div>
-            <span className="font-bold">GourmetRoute</span>
-          </Link>
-
-          <nav className="ml-auto flex items-center space-x-4">
-            <Button variant="ghost" asChild>
-              <Link href="/">Accueil</Link>
-            </Button>
-            <Button variant="ghost" asChild>
-              <Link href="/restaurants">Restaurants</Link>
-            </Button>
-            <Button>Réserver</Button>
-          </nav>
-        </div>
-      </header>
-
       <main className="container py-6">
         <div className="flex items-center mb-6">
-          <Link href="/restaurants" className="flex items-center text-muted-foreground hover:text-foreground mr-2">
+          <Link href="/restaurant" className="flex items-center text-muted-foreground hover:text-foreground mr-2">
             <ChevronLeft className="h-4 w-4 mr-1" />
             Retour aux restaurants
           </Link>
@@ -238,7 +219,11 @@ export default function RestaurantDetailPage({ params }: { params: { id: string 
           </div>
 
           <div className="mt-8">
-            <Button size="lg">Réserver une table</Button>
+            <Button size="lg" asChild>
+              <Link href={`/restaurant/${params.id}/book`}>
+                Réserver une table
+              </Link>
+            </Button>
           </div>
         </div>
       </main>

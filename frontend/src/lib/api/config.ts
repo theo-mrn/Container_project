@@ -36,28 +36,20 @@ if (!AUTH_API_BASE || !ORDERS_API_BASE) {
 }
 
 export const API_URLS = {
-  // Auth endpoints
   AUTH: {
-    LOGIN: `${AUTH_API_BASE}/api/auth/login`,
-    REGISTER: `${AUTH_API_BASE}/api/auth/register`,
-    VERIFY: `${AUTH_API_BASE}/api/auth/verify`,
-    REFRESH_TOKEN: `${AUTH_API_BASE}/api/auth/refresh-token`,
-    LOGOUT: `${AUTH_API_BASE}/api/auth/logout`,
+    LOGIN: '/api/auth/login',
+    REGISTER: '/api/auth/register',
+    VERIFY: '/api/auth/verify',
+    LOGOUT: '/api/auth/logout'
   },
-  
-  // Users endpoints
   USERS: {
-    BASE: `${AUTH_API_BASE}/api/users`,
-    PROFILE: `${AUTH_API_BASE}/api/users/profile`,
+    PROFILE: '/api/users/profile',
+    UPDATE: '/api/users/update'
   },
-  
-  // Orders endpoints
   ORDERS: {
     BASE: `${ORDERS_API_BASE}/api/orders`,
     USER_ORDERS: `${ORDERS_API_BASE}/api/orders/user`,
   },
-
-  // Restaurant endpoints
   RESTAURANTS: {
     BASE: `${ORDERS_API_BASE}/api/restaurants`,
     MENU: (id: string) => `${ORDERS_API_BASE}/api/restaurants/${id}/menu`,

@@ -33,7 +33,17 @@ export interface MenuCategory {
 }
 
 export interface RestaurantWithMenu extends Restaurant {
-  categories: MenuCategory[];
+  categories?: {
+    id: number;
+    name: string;
+    items: {
+      id: number;
+      name: string;
+      description: string;
+      price: number;
+      is_available: boolean;
+    }[];
+  }[];
 }
 
 export interface CreateRestaurantData {
@@ -59,33 +69,33 @@ export interface CreateMenuCategoryData {
 }
 
 class RestaurantService {
-  async getAllRestaurants() {
-    const response = await restaurantApi.get<{ status: string; data: { restaurants: Restaurant[] } }>('/api/restaurants');
-    return response.data;
+  async getAllRestaurants(): Promise<Restaurant[]> {
+    const response = await restaurantApi.get('/api/restaurants');
+    return response.data.data.restaurants;
   }
 
-  async getRestaurantById(id: string): Promise<Restaurant> {
-    const response = await restaurantApi.get<{ status: string; data: { restaurant: Restaurant } }>(`/api/restaurants/${id}`);
+  async getRestaurant(id: string): Promise<Restaurant> {
+    const response = await restaurantApi.get(`/api/restaurants/${id}`);
     return response.data.data.restaurant;
   }
 
   async getRestaurantMenu(id: string): Promise<RestaurantWithMenu> {
-    const response = await restaurantApi.get<RestaurantWithMenu>(`/api/restaurants/${id}/menu`);
+    const response = await restaurantApi.get(`/api/restaurants/${id}/menu`);
     return response.data;
   }
 
   async updateRestaurant(id: string, data: Partial<CreateRestaurantData>): Promise<Restaurant> {
-    const response = await restaurantApi.put<{ status: string; data: { restaurant: Restaurant } }>(`/api/restaurants/${id}`, data);
+    const response = await restaurantApi.put(`/api/restaurants/${id}`, data);
     return response.data.data.restaurant;
   }
 
   async createRestaurant(data: CreateRestaurantData): Promise<Restaurant> {
-    const response = await restaurantApi.post<{ status: string; data: { restaurant: Restaurant } }>('/api/restaurants', data);
+    const response = await restaurantApi.post('/api/restaurants', data);
     return response.data.data.restaurant;
   }
 
   async createMenuCategory(restaurantId: string, data: CreateMenuCategoryData): Promise<MenuCategory> {
-    const response = await restaurantApi.post<{ status: string; data: { category: MenuCategory } }>(
+    const response = await restaurantApi.post(
       `/api/restaurants/${restaurantId}/categories`,
       data
     );

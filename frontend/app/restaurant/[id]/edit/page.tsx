@@ -51,7 +51,7 @@ export default function EditRestaurantPage({ params }: { params: { id: string } 
     const fetchRestaurant = async () => {
       try {
         setLoading(true)
-        const data = await restaurantService.getRestaurantById(params.id)
+        const data = await restaurantService.getRestaurant(params.id)
         setRestaurant(data)
         // Initialiser le formulaire avec les données existantes
         setFormData({

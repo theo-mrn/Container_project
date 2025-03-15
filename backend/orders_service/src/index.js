@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const { logger } = require('./config/logger');
-const orderRoutes = require('./routes/orderRoutes');
+const bookingRoutes = require('./routes/Booking');
 const restaurantRoutes = require('./routes/restaurantRoutes');
 const { errorHandler } = require('./middleware/errorHandler');
 const { dbClient } = require('./config/db');
@@ -13,22 +13,27 @@ const { setupQueues } = require('./queues');
 const app = express();
 const PORT = process.env.PORT || 5002;
 
-// Middlewares
+// Middlewares de base
+app.use(express.json()); // Parsing du JSON
 app.use(helmet()); // Sécurité HTTP
+
+// Configuration CORS
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-  credentials: true
-}));   // Gestion des Cross-Origin Resource Sharing
-app.use(express.json()); // Parsing du JSON
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Journalisation des requêtes
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.originalUrl}`);
+  logger.debug('Request headers:', req.headers);
   next();
 });
 
 // Routes
-app.use('/api/orders', orderRoutes);
+app.use('/api/bookings', bookingRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 
 // Route de test/santé
