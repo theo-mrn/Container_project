@@ -88,8 +88,8 @@ docker-compose up
 
 L'application est préchargée avec les utilisateurs suivants :
 
-- **Admin**: admin2@example.com / admin
-- **Regular**: regular@example.com/ regular
+- **Admin**: admin@gmail.com / admin
+- **Regular**: regular@gmail.com/ regular
 
 
 ## 📝 Fonctionnalités
